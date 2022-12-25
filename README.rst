@@ -2,7 +2,7 @@ Turbospectrum
 =============
 
 This is a redistribution of the `Turbospectrum 2020 stellar spectral
-synthesis software <https://github.com/bertrandplez/Turbospectrum_NLTE>`
+synthesis software <https://github.com/bertrandplez/Turbospectrum_NLTE>`_
 as well as my own python wrapper code.
 
 
