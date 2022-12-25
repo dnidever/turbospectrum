@@ -70,6 +70,8 @@ def compile_and_install_software():
         if os.path.exists(bindir+f): os.remove(bindir+f)
         print('Copying bin/'+f+' -> '+bindir+'/'+f)
         shutil.copyfile('bin/'+f,bindir+'/'+f)
+        # Make executable
+        os.chmod(bindir+'/'+f,0o755)
         
     ## Download and convert linelists
     #curdir = os.path.abspath(os.curdir)
