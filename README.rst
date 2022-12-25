@@ -1,8 +1,10 @@
 Turbospectrum
 =============
 
-This is a redistribution of the Turbospectrum 2020 stellar spectral
-synthesis software and python wrapper code.
+This is a redistribution of the `Turbospectrum 2020 stellar spectral
+synthesis software <https://github.com/bertrandplez/Turbospectrum_NLTE>`
+as well as my own python wrapper code.
+
 
 Authors
 -------
