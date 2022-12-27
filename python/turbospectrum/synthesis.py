@@ -294,5 +294,4 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,
     except :
         print('failed...',root,atmod,mh,am)
         return 0.,0.,0.
-    #import pdb; pdb.set_trace()
     return flux,cont,wave
