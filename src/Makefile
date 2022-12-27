@@ -3,7 +3,7 @@ type = ifort
 else ifneq (,$(shell which gfortran))
 type = gfortran
 else
-$(error "No ifort or gfortran to compile the code")
+type = none
 endif
 
 
@@ -22,3 +22,5 @@ clean:
 	rm -f *.o
 	rm -f exec/*.o exec/*_lu
 	rm -f exec-gf/*.o exec-gf/*_lu
+error:
+	"ERROR: No ifort or gfortran to compile the code"
