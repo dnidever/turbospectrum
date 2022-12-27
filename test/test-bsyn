@@ -1,0 +1,113 @@
+#!/bin/csh -f
+
+#
+# This script is a demo script for NLTE TS.
+#
+
+date
+set mpath = /Users/nidever/projects/turbospectrum/test
+set dpath = /Users/nidever/projects/turbospectrum/test
+
+set MODEL = s6000_g+1.0_m0.5.mod
+
+set Feabu = 7.50
+ 
+set lam_min    = '4800.'
+set lam_max    = '6800.'
+
+set deltalam   = '0.006'
+set METALLIC   = '     0.000'
+set TURBVEL = 1.0
+
+set SUFFIX     = _${lam_min}-${lam_max}_xit${TURBVEL}-NLTE-windows.spec
+set result     = ${MODEL}${SUFFIX}
+
+time /Users/nidever/projects/turbospectrum/src/exec-gf/bsyn_lu <<EOF
+#time ~/Documents/GitHub/Turbospectrum/Turbospectrum2020/exec/bsyn_lu <<EOF
+###########
+# Use NLTE if true. Source function is then computed with departure coefficients 
+# from departure coefficient file for the atoms in model atom files, if they 
+# are provided. 
+#
+'NLTE :'          '.false.'
+###########
+# file containing NLTE information 
+# (species, with LTE/NLTE flags, and associated files)
+#
+'NLTEINFOFILE:'  'DATA/SPECIES_LTE_NLTE.dat'
+#
+###########
+# if present these files will be used to compute the spectrum in a number of 
+# windows specified in SEGMENTSFILE. 
+# Comment out if not needed, and the spectrum will be computed from 
+# LAMBDA_MIN to LAMBDA_MAX
+# Segments must NOT overlap
+#
+#'SEGMENTSFILE:'     '${dpath}/uves_giant_Fe-seg.txt'
+#
+# spectral resolution  to be used in these windows. 
+# If not specified, a default value of 500000 is used
+# Note that a constant step is set for each window, using this resolution
+# if no windows, LAMBDA_STEP is used.
+#
+'RESOLUTION:'     '300000.'
+###########
+# spectral interval in the case of a single wavelength interval, i.e. no 
+# segmentsfile.
+# min and max lambda for the calculations and constant wavelength step
+#
+'LAMBDA_MIN:'     '${lam_min}'
+'LAMBDA_MAX:'     '${lam_max}'
+'LAMBDA_STEP:'    '${deltalam}'
+###########
+# Intensity / Flux 
+# in the Intensity case, 12 angles are hardcoded, and spectra are computed 
+# for all of them, in addition to the flux.
+#
+'INTENSITY/FLUX:' 'Flux'
+###########
+# file containing continuous opacity at all model points. Can be computed with babsma.f
+# or be a .opa file from the MARCS web site.
+#
+'MODELOPAC:' '$dpath/${MODEL}opac'
+###########
+# output file containing spectrum
+#
+'RESULTFILE :' '$dpath/${result}'
+###########
+# Chemical composition. First overall metallicity, then alpha/Fe, Helium/H, and r- and s-process
+# The latter are scaled according to their solar-system fraction (see makeabund.f)
+# finally individual abundances can be provided by first giving how many of them are changed and then
+# for each of them their atomic number followed by the absolute abundance
+# in bsyn.f isotopic fractions can be set, e.g. 
+# 12.012 0.9
+# 12.013 0.1
+# to set 90% of 12C and 10% of 13C.
+#
+'METALLICITY:'    '${METALLIC}'
+'ALPHA/Fe   :'    '0.00'
+'HELIUM     :'    '0.00'
+'R-PROCESS  :'    '0.00'
+'S-PROCESS  :'    '0.00'
+'INDIVIDUAL ABUNDANCES:'   '1'
+26  $Feabu
+'ISOTOPES : ' '2'
+12.012  0.9
+12.013  0.1
+###########
+# line lists. First how many there are, and then the list of lists
+#
+'NFILES   :' '2'
+$dpath/nlte_linelist_test.txt
+DATA/Hlinedata
+###########
+# spherical (T) or plane-parallel (F) radiative transfer. 
+# If spherical, a few more parameters are read
+# DO NOT CHANGE THESE PARAMETERS UNLESS YOU REALLY KNOW WHAT YOU ARE DOING.
+#
+'SPHERICAL:'  'F'
+  30
+  300.00
+  15
+  1.30
+EOF
