@@ -1,7 +1,7 @@
 include README.rst
-#include DATA/*
+#include data/*
 #include test/*
-include python/turbospectrum/DATA/*
+include python/turbospectrum/data/*
 include python/turbospectrum/test/*
 
 prune build
