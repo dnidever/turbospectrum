@@ -99,7 +99,7 @@ def synthesize(teff,logg,mh=0.0,am=0.0,cm=0.0,nm=0.0,vmicro=2.0,elems=None,
     if type(linelists) is str:
         linelists = [linelists]
     for l in linelists:
-        if os.path.exists(l):
+        if os.path.exists(l)==False:
             raise FileNotFoundError(l)
     if os.path.exists(atmod)==False:
         raise FileNotFoundError(atmod)
@@ -221,14 +221,14 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,
         fout.write("{:8.3f}\n".format(vmicro))
         fout.write("EOF\n")
         fout.close()
-        if run:
-            os.chmod(root+'_babsma.csh', 0o777)
-            ret = subprocess.check_output(['./'+os.path.basename(root)+'_babsma.csh'],stderr=subprocess.STDOUT)
-            # Save the log file            
-            if type(ret) is bytes:
-                ret = ret.decode()
-            with open(root+'_babsma.log','w') as f:
-                f.write(ret)
+        # Run babsma
+        os.chmod(root+'_babsma.csh', 0o777)
+        ret = subprocess.check_output(['./'+os.path.basename(root)+'_babsma.csh'],stderr=subprocess.STDOUT)
+        # Save the log file            
+        if type(ret) is bytes:
+            ret = ret.decode()
+        with open(root+'_babsma.log','w') as f:
+            f.write(ret)
         babsma = os.path.basename(root)+'opac'
 
     # Create bsyn control file
@@ -294,4 +294,5 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,
     except :
         print('failed...',root,atmod,mh,am)
         return 0.,0.,0.
+    #import pdb; pdb.set_trace()
     return flux,cont,wave
