@@ -67,12 +67,15 @@ def compile_and_install_software():
         
     # Copy fortran binaries to bin/ directory
     for f in ['babsma_lu','bsyn_lu']:
-        if os.path.exists(bindir+f): os.remove(bindir+f)
-        print('Copying bin/'+f+' -> '+bindir+'/'+f)
-        shutil.copyfile('bin/'+f,bindir+'/'+f)
-        # Make executable
-        os.chmod(bindir+'/'+f,0o755)
-        
+        if os.path.exists('bin/'+f):
+            if os.path.exists(bindir+f): os.remove(bindir+f)
+            print('Copying bin/'+f+' -> '+bindir+'/'+f)
+            shutil.copyfile('bin/'+f,bindir+'/'+f)
+            # Make executable
+            os.chmod(bindir+'/'+f,0o755)
+        else:
+            print('bin/'+f+' NOT FOUND')
+            
     ## Download and convert linelists
     #curdir = os.path.abspath(os.curdir)
     #subprocess.check_call('make', cwd=curdir+'/linelists', shell=True)    
