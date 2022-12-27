@@ -60,7 +60,7 @@ def compile_and_install_software():
     src_path = './src/'
     
     # Install the software
-    ret = subprocess.run(['make','all'], cwd=src_path, shell=True)
+    ret = subprocess.run(['make'], cwd=src_path, shell=True)
 
     # Get the path for the binaries
     bindir = get_bin_path()
