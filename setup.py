@@ -60,6 +60,7 @@ def compile_and_install_software():
     src_path = './src/'
     
     # Install the software
+    print('Compiling the Fortran code')
     ret = subprocess.run(['make'], cwd=src_path, shell=True)
 
     # Get the path for the binaries
