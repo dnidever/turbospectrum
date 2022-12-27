@@ -6,7 +6,6 @@ else
 type = error
 endif
 
-
 all: $(value type)
 ifort:
 	#-rm DATA
@@ -23,4 +22,4 @@ clean:
 	rm -f exec/*.o exec/*_lu
 	rm -f exec-gf/*.o exec-gf/*_lu
 error:
-	"ERROR: No ifort or gfortran to compile the code"
+	@echo "ERROR: No ifort or gfortran to compile the code"
