@@ -88,7 +88,7 @@ class CustomInstall(install):
         super().run()
 
 setup(name='turbospectrum',
-      version='1.0.0',
+      version='1.0.1',
       description='Turbospectrum spectral synthesis code', 
       author='David Nidever',
       author_email='dnidever@montana.edu',
