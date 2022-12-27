@@ -16,7 +16,7 @@ Installation
 
 To install the latest version::
 
-    pip install git+https://github.com/dnidever/turbospectrum
+    pip install turbospectrum
 
     
 Documentation
@@ -26,7 +26,7 @@ Documentation
         :target: http://turbospectrum.readthedocs.io/
 
 See `the documentation <http://turbospectrum.readthedocs.io>`_ for information on how
-to install and use Spyderwebb.
+to install and use Turbospectrum.
 
 License
 -------

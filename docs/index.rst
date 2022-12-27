@@ -1,18 +1,19 @@
-.. fraunhofer documentation master file, created by
+.. turbospectrum documentation master file, created by
    sphinx-quickstart on Tue Feb 16 13:03:42 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-**********
-Fraunhofer
-**********
+*************
+Turbospectrum
+*************
 
 Introduction
 ============
-|Fraunhofer| [#f1]_ is a generic stellar abundance determination package that fits observed spectrum with synthetic spectral (from the Synspec package).
-|Fraunhofer| uses the `Doppler <https://github.com/dnidever/doppler>`_ package to get an initial estimate of the main stellar parameters (Teff, logg,
-[Fe/H]) and radial velocity.  It then performs a least-squares fit of the data by searching through parameter space and generated a new Synspec synthetic
-spectrum (using the `synple <https://github.com/callendeprieto/synpl>`_ python wrapper package) at each position.
+|Turbospectrum| is a generical stellar spectral synthesis package that can be run from python.  It's essentially
+a redistribution of the `Turbospectrum <https://github.com/bertrandplez/Turbospectrum_NLTE>`_
+Fortran spectral synthesis code by Bertrand Plez and a python wrapper/driver software (mostly reused from Jon Holtzman's
+code in the `APOGEE package <https://github.com/sdss/apogee>`_).  The setup.py file has also been modified to
+automatically compile the Fortran code and copy them to the user's python scripts directory.
 
 .. toctree::
    :maxdepth: 1
@@ -23,18 +24,9 @@ spectrum (using the `synple <https://github.com/callendeprieto/synpl>`_ python w
 
 Description
 ===========
-|Fraunhofer| has two main modes of operation: 1) a multi-step, iterative fit of the spectrum; or 2) fitting a set of input parameters directly using least-squares.
-The first option is the default and is the easiest and most automatic way to fit a spectrum.  The second option can be used for more hands-on situations.
+To run |Turbospectrum| you need 1) a model atmosphere, 2) a linelist (or multiple), and 3) the set of stellar parameters
+and elemental abundances that you want to run.
 
-The default, multi-step approach:
-
-1. Fit Teff/logg/[Fe/H]/RV using Doppler
-2. Fit Teff/logg/[Fe/H]/RV + vsini with Doppler model
-3. Fit stellar parameters (Teff/logg/[Fe/H]/[alpha/H]), RV and broadening (Vrot/Vmicro)
-4. Fit each element one at a time holding everything else fixed
-5. Fit everything simultaneously
-
-|Fraunhofer| can be called from python directly or the command-line script `hofer` can be used.
 
 
 Examples
@@ -45,40 +37,6 @@ Examples
 
     examples
 
-
-hofer
-=====
-Here are the various input arguments for command-line script `hofer`::
-
-  usage: hofer [-h] [-e ELEM] [-f FPARS] [-i INIT] [--outfile OUTFILE]
-               [--figfile FIGFILE] [-d OUTDIR] [-l LIST] [-p] [--vmicro]
-               [--vsini] [-r READER] [-v [VERBOSE]]
-               files [files ...]
-
-  Run Fraunhofer fitting on spectra
-
-  positional arguments:
-    files                 Spectrum FITS files
-
-  optional arguments:
-    -h, --help            show this help message and exit
-    -e ELEM, --elem ELEM  List of elements to fit
-    -f FPARS, --fpars FPARS
-                          List of parameteres to fit
-    -i INIT, --init INIT  Initial parameters to use
-    -o, --outfile OUTFILE Output filename
-    --figfile FIGFILE     Figure filename
-    -d OUTDIR, --outdir OUTDIR
-                          Output directory
-    -l LIST, --list LIST  Input list of FITS files
-    -p, --plot            Save the plots
-    --vmicro              Fit vmicro
-    --vsini               Fit vsini
-    -r READER, --reader READER
-                          The spectral reader to use
-    -v [VERBOSE], --verbose [VERBOSE]
-                          Verbosity level (0, 1, 2)
-
 *****
 Index
 *****
@@ -86,7 +44,3 @@ Index
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-			  
-.. rubric:: Footnotes
-
-.. [#f1] For `Joseph von Fraunhofer <https://en.wikipedia.org/wiki/Joseph_von_Fraunhofer>`_ who was a German physicist and the first one to systematically study the absorption lines in the Sun's spectrum.
