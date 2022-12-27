@@ -1,0 +1,5 @@
+include README.rst
+include python/turbospectrum/DATA/*
+include python/turbospectrum/test/*
+
+prune build
