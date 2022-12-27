@@ -35,7 +35,7 @@ and elemental abundances that you want to run.
 
    Turbospectrum requires a specific linelist format.  It is described in more detail `here <_static/Readme-Linelist_format>`_.
    
-3) Stellar paramters and elemental abundances.
+3) Stellar parameters and elemental abundances.
 
    The main stellar parameters are Teff, logg, [M/H], and [alpha/M].  These are the first four parameters in the
    main ``synthesis.synthesize()`` function.  The individual elements abundances are given in the ``elems`` parameters
