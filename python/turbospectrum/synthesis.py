@@ -4,8 +4,6 @@ import shutil
 import subprocess
 import tempfile
 import time
-from astropy.table import Table
-from dlnpyutils import utils as dln
 from . import utils, atomic, atmos
 
 
