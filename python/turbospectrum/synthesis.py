@@ -9,10 +9,10 @@ from dlnpyutils import utils as dln
 from . import utils, atomic, atmos
 
 
-def synthesize(teff,logg,mh=0.0,am=0.0,cm=0.0,nm=0.0,vmicro=2.0,solarisotopes=False,
-               elems=None,wrange=[15000.0,17000.0],dw=0.1,atmod=None,atmos_type='marcs',
-               dospherical=True,atoms=True,molec=True,save=False,run=True,workdir=None,
-               verbose=False):
+def synthesize(teff,logg,mh=0.0,am=0.0,cm=0.0,nm=0.0,vmicro=2.0,elems=None,
+               wrange=[15000.0,17000.0],dw=0.1,atmod=None,atmos_type='marcs',
+               dospherical=True,linelists=None,solarisotopes=False,workdir=None,
+               save=False,verbose=False):
     """
     Code to synthesize a spectrum with Turbospectrum.
     
@@ -46,14 +46,10 @@ def synthesize(teff,logg,mh=0.0,am=0.0,cm=0.0,nm=0.0,vmicro=2.0,solarisotopes=Fa
        Type of model atmosphere file.  Default is 'marcs'.
     dospherical : bool, optional
        Perform spherically-symmetric calculations (otherwise plane-parallel).  Default is True.
-    atoms : bool, optional
-       Include atomic lines in the calculation.  Default is True.
-    molec : bool, optional
-       Include molecular lines in the calculation.  Default is True.
+    linelists : list,
+       List of linelists to use.
     save : bool, optional
        Save temporary directory and files for synthesis.  Default=False.
-    run : bool, optional
-       Actually do the synthesis.  Default is True.
     workdir : str, optional
        Directory to perform the work in.  By default a temporary directory is
          created and deleted after the work is done (unless save=True).
@@ -76,6 +72,8 @@ def synthesize(teff,logg,mh=0.0,am=0.0,cm=0.0,nm=0.0,vmicro=2.0,solarisotopes=Fa
 
     """
 
+    t0 = time.time()
+    
     # Default abundances
     abundances = atomic.solar()
     abundances[2:] += mh
@@ -95,57 +93,40 @@ def synthesize(teff,logg,mh=0.0,am=0.0,cm=0.0,nm=0.0,vmicro=2.0,solarisotopes=Fa
     cwd = os.getcwd()
     os.chdir(workdir)
 
+    # Create the root name from the input parameters
     root = (atmos_type+'_t{:04d}g{:s}m{:s}a{:s}c{:s}n{:s}v{:s}').format(int(teff), atmos.cval(logg), 
                       atmos.cval(mh), atmos.cval(am), atmos.cval(cm), atmos.cval(nm),atmos.cval(vmicro))
 
+    # Check that linelists and model atmosphere files exit
+    if type(linelists) is str:
+        linelists = [linelists]
+    for l in linelists:
+        if os.path.exists(l):
+            raise FileNotFoundError(l)
+    if os.path.exists(atmod)==False:
+        raise FileNotFoundError(atmod)
 
-    linelists = ['/Users/nidever/projects/turbospectrum/test/nlte_linelist_test.txt',
-                 '/Users/nidever/projects/turbospectrum/DATA/Hlinedata']
-    atmod = '/Users/nidever/projects/turbospectrum/test/s6000_g+1.0_m0.5.mod'
-
-    
-    #if atmod is None:
-    #    atmod = get_atmod_file(teff,logg,mh,amtmp,cmtmp,nm,atmos_type=atmos_type,nskip=nskip,
-    #                           atmosroot=atmosroot,atmosdir=atmosdir,workdir=workdir)
-    #elif atmod == 'interp' and atmos_type == 'marcs': 
-    #    atmod = interpol_marcs(teff,logg,mh,amtmp,cmtmp,nm,workdir=workdir)
-    #    atmos_type = 'marcs-interp'
-    #else:
-    #    shutil.copy(atmod,workdir+'/'+os.path.basename(atmod))
-    #
-    #if type(atmod) is int:
-    #    if atmod == -1:        
-    #        print('HOLE NOT SYNTHESIZED: ', atmod)
-    #        return 0.,0.
-    #    else:
-    #        print('PROBLEM: ',atmod)
-    #        fail('mkturbospec problem: ',atmod)
-    #        return 0.,0.
-
-    
-    # Do the opacity calculations first, then synthesis for all abund
-    #out = do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=save,run=run,
-    #                   solarisotopes=solarisotopes,bsyn=False,atmos_type=atmos_type,vmicro=vmicro)
-
-    
     if dospherical and ('marcs' in atmos_type) and logg <= 3.001:
         spherical= True
     else:
         spherical = False
     flux,cont,wave = do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,
-                                  save=save,run=run,solarisotopes=solarisotopes,
+                                  save=save,solarisotopes=solarisotopes,
                                   babsma=None,atmos_type=atmos_type,
                                   spherical=spherical,tfactor=1.0)
 
     os.chdir(cwd)
-    if run:
-        if not save:
-            shutil.rmtree(workdir)
-        return flux,cont,wave
+    if not save:
+        shutil.rmtree(workdir)
+
+    if verbose:
+        print('dt = {:.3f}s'.format(time.time()-t0))
+        
+    return flux,cont,wave
 
     
-def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,run=True,
-                 solarisotopes=False,babsma=None,bsyn=True,atmos_type='marcs',
+def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,
+                 solarisotopes=False,babsma=None,atmos_type='marcs',
                  spherical=True,vmicro=2.0,tfactor=1.0,verbose=False):
     """
     Runs Turbospectrum for specified input parameters.
@@ -159,7 +140,7 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,run=
     linelists : list
        List of linelist filenames.
     mh : float, optional
-       Metallicity, [M/H].  Deftauls is 0.0 (solar).
+       Metallicity, [M/H].  Default is 0.0 (solar).
     am : float, optional
        Alpha abundance, [alpha/M].  Default is 0.0 (solar).
     abundances : list
@@ -168,24 +149,18 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,run=
        Two element wavelength range in A.  Default is [15000.0,17000.0].
     dw : float, optional
        Wavelength step.  Default is 0.1 A.
-    save : bool, optional
-       Save temporary directory and files for synthesis.  Default=False.
-    run : bool, optional
-       Actually do the synthesis.  Default is True.
     solarisotopes : bool, optional
        Use solar isotope ratios, else "giant" isotope ratios.  Default is False.
     babsma : bool, optional
-       Run Turbospectrum "babsma" binary code to calculate opacities.  Default is None.
-    bsyn : bool, optional
-       Run Turbospectrum "bsyn" binary code to calculate spectral synthesis.  Default is True.
+       The name of hte babsma output file of opacities.  Default is None to run babmsa.
     atmos_type : str, optional
        Model atmosphere type.  Default is 'marcs'.
     spherical : bool, optional
        Spherical atmosphere.  Default is True.
     vmicro : float, optional
        Microturbulent velocity in km/s.  Default is 2.0 km/s.
-    tfactor : float, optional
-       Some factor.  Default is 1.0.
+    save : bool, optional
+       Save temporary directory and files for synthesis.  Default=False.
     verbose : bool, optional
        Verbose output to the screen.
 
@@ -239,7 +214,7 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,run=
         fout.write("'INDIVIDUAL ABUNDANCES:'  '{:2d}'\n".format(nels))
         for iel,abun in enumerate(abundances):
             fout.write("{:5d}  {:8.3f}\n".format(iel+1,abun))
-        if not solarisotopes :
+        if not solarisotopes:
             fout.write("'ISOTOPES:'  '2'\n")
             # Adopt ratio of 12C/13C=15
             fout.write("   6.012 0.9375\n")
@@ -257,9 +232,6 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,run=
             with open(root+'_babsma.log','w') as f:
                 f.write(ret)
         babsma = os.path.basename(root)+'opac'
-
-    if not bsyn:
-        return
 
     # Create bsyn control file
     bsynfile = root
@@ -306,21 +278,22 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,run=
     fout.write("#!/bin/csh -f\n")
     fout.write("bsyn_lu < {:s} &\n".format(os.path.basename(bsynfile)+'.inp'))
     fout.close()
-    if run:
-        os.chmod(root+'_bsyn.csh', 0o777)
-        ret = subprocess.check_output(['./'+os.path.basename(root)+'_bsyn.csh'],stderr=subprocess.STDOUT)
-        # Save the log file
-        if type(ret) is bytes:
-            ret = ret.decode()
-        with open(root+'_bsyn.log','w') as f:
-            f.write(ret)
-        try:
-            out = np.loadtxt(root)
-            wave = out[:,0]
-            fluxnorm = out[:,1]
-            flux = out[:,2]
-            cont = flux/fluxnorm
-        except :
-            print('failed...',root,atmod,mh,am)
-            return 0.,0.,0.
-        return flux,cont,wave
+
+    # Run bsyn
+    os.chmod(root+'_bsyn.csh', 0o777)
+    ret = subprocess.check_output(['./'+os.path.basename(root)+'_bsyn.csh'],stderr=subprocess.STDOUT)
+    # Save the log file
+    if type(ret) is bytes:
+        ret = ret.decode()
+    with open(root+'_bsyn.log','w') as f:
+        f.write(ret)
+    try:
+        out = np.loadtxt(root)
+        wave = out[:,0]
+        fluxnorm = out[:,1]
+        flux = out[:,2]
+        cont = flux/fluxnorm
+    except :
+        print('failed...',root,atmod,mh,am)
+        return 0.,0.,0.
+    return flux,cont,wave
