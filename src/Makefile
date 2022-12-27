@@ -3,7 +3,7 @@ type = ifort
 else ifneq (,$(shell which gfortran))
 type = gfortran
 else
-type = none
+type = error
 endif
 
 
