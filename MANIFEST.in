@@ -1,4 +1,6 @@
 include README.rst
+#include DATA/*
+#include test/*
 include python/turbospectrum/DATA/*
 include python/turbospectrum/test/*
 

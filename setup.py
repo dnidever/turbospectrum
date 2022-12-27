@@ -43,7 +43,7 @@ def get_bin_path():
                 bindir = None
     # Get bin/ directory from python executable
     if bindir is None:
-        out = subprocess.check_output('which python',shell=True)
+        out = subprocess.run(['which','python'],shell=True)
         if type(out) is bytes:
             out = out.decode()
         bindir = os.path.dirname(out)
@@ -60,7 +60,7 @@ def compile_and_install_software():
     src_path = './src/'
     
     # Install the software
-    subprocess.check_call('make all', cwd=src_path, shell=True)
+    ret = subprocess.run(['make','all'], cwd=src_path, shell=True)
 
     # Get the path for the binaries
     bindir = get_bin_path()
