@@ -83,7 +83,7 @@ if 'install' in sys.argv or 'develop' in sys.argv or 'bdist_wheel' in sys.argv:
     compileturbo()
 
 setup(name='turbospectrum',
-      version='1.0.1',
+      version='1.0.2',
       description='Turbospectrum spectral synthesis code', 
       author='David Nidever',
       author_email='dnidever@montana.edu',
