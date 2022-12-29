@@ -10,6 +10,8 @@ Authors
 -------
 
 - **David Nidever** (Montana State University)
+
+I did **not** write most of the code in this repository!
   
 Installation
 ------------
