@@ -1,22 +1,14 @@
 import os
 import sys
-import shutil
-from setuptools import setup, find_packages, find_namespace_packages
-from setuptools.command.install import install
+import fileinput
+import platform
 import subprocess
+from setuptools.command.install import install
+from setuptools import setup, find_packages
 
-def get_virtualenv_path():
-    """Used to work out path to install compiled binaries to."""
-    if hasattr(sys, 'real_prefix'):
-        return sys.prefix
-
-    if hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix:
-        return sys.prefix
-
-    if 'conda' in sys.prefix:
-        return sys.prefix
-
-    return None
+from platform import system as current_platform
+import shutil
+from glob import glob
 
 def get_bin_path():
     # Get environment bin/ directory
@@ -54,11 +46,19 @@ def get_bin_path():
         raise Exception('No bin/ directory found')
 
     return bindir
-    
-def compile_and_install_software():
-    """Used the subprocess module to compile/install the C software."""
+
+
+def compileturbo():
+    """ Compile the Turbospectrum Fortran code."""
     src_path = './src/'
-    
+
+    # Identify the platform
+    platform = current_platform()
+    # Check for platform first
+    #if platform not in ('Darwin', 'Linux'):
+    #    sys.stderr.write("Platform '%s' not recognised!\n" % platform)
+    #    sys.exit()
+        
     # Install the software
     print('Compiling the Fortran code')
     ret = subprocess.run(['make'], cwd=src_path, shell=True)
@@ -76,16 +76,11 @@ def compile_and_install_software():
             os.chmod(bindir+'/'+f,0o755)
         else:
             print('bin/'+f+' NOT FOUND')
-            
-    ## Download and convert linelists
-    #curdir = os.path.abspath(os.curdir)
-    #subprocess.check_call('make', cwd=curdir+'/linelists', shell=True)    
-    
-class CustomInstall(install):
-    """Custom handler for the 'install' command."""
-    def run(self):
-        compile_and_install_software()
-        super().run()
+
+
+# We need to build Turbospectrum
+if 'install' in sys.argv or 'develop' in sys.argv or 'bdist_wheel' in sys.argv:
+    compileturbo()
 
 setup(name='turbospectrum',
       version='1.0.1',
@@ -93,11 +88,8 @@ setup(name='turbospectrum',
       author='David Nidever',
       author_email='dnidever@montana.edu',
       url='https://github.com/dnidever/turbospectrum',
-      #scripts=['bin/synple'],
       requires=['numpy','astropy(>=4.0)','scipy','matplotlib','dlnpyutils'],
-      cmdclass={'install': CustomInstall},
-      zip_safe = False,
       include_package_data=True,
-      packages=find_namespace_packages(where="python"),
+      packages = ['turbospectrum'],
       package_dir={"": "python"}   
 )
