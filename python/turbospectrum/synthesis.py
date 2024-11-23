@@ -223,10 +223,18 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,
         fout.close()
         # Run babsma
         os.chmod(root+'_babsma.csh', 0o777)
-        ret = subprocess.check_output(['./'+os.path.basename(root)+'_babsma.csh'],stderr=subprocess.STDOUT)
+        #ret = subprocess.check_output(['./'+os.path.basename(root)+'_babsma.csh'],stderr=subprocess.STDOUT)
+        res = subprocess.run(['./'+os.path.basename(root)+'_babsma.csh'],capture_output=True)
+        if res.returncode!=0:
+            print(res.stdout.decode())
+            print(res.stderr.decode())
+            raise Exception('Turbospectrum failed')
+        else:
+            ret = res.stdout
+            if type(ret)==byes:
+                ret = ret.decode()
+        
         # Save the log file            
-        if type(ret) is bytes:
-            ret = ret.decode()
         with open(root+'_babsma.log','w') as f:
             f.write(ret)
         babsma = os.path.basename(root)+'opac'
@@ -279,6 +287,7 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,
 
     # Run bsyn
     os.chmod(root+'_bsyn.csh', 0o777)
+    import pdb; pdb.set_trace()
     ret = subprocess.check_output(['./'+os.path.basename(root)+'_bsyn.csh'],stderr=subprocess.STDOUT)
     # Save the log file
     if type(ret) is bytes:
