@@ -8,7 +8,7 @@ from . import utils, atomic, atmos
 
 
 def synthesize(teff,logg,mh=0.0,am=0.0,cm=0.0,nm=0.0,vmicro=2.0,elems=None,
-               wrange=[15000.0,17000.0],dw=0.1,atmod=None,atmos_type='marcs',
+               wrange=[15000.0,17000.0],dw=0.1,atmod=None,atmos_type=None,
                dospherical=True,linelists=None,solarisotopes=False,workdir=None,
                save=False,verbose=False):
     """
@@ -41,7 +41,7 @@ def synthesize(teff,logg,mh=0.0,am=0.0,cm=0.0,nm=0.0,vmicro=2.0,elems=None,
     atmod : str, optional
        Name of atmosphere model (default=None, model is determined from input parameters).
     atmos_type : str, optional
-       Type of model atmosphere file.  Default is 'marcs'.
+       Type of model atmosphere file.  None by default and the file will be auto-identified.
     dospherical : bool, optional
        Perform spherically-symmetric calculations (otherwise plane-parallel).  Default is True.
     linelists : list,
@@ -91,6 +91,10 @@ def synthesize(teff,logg,mh=0.0,am=0.0,cm=0.0,nm=0.0,vmicro=2.0,elems=None,
     cwd = os.getcwd()
     os.chdir(workdir)
 
+    # Identify model atmosphere file type
+    if atmos_type is None:
+        atmos_type = utils.identify_atmos(atmod)
+    
     # Create the root name from the input parameters
     root = (atmos_type+'_t{:04d}g{:s}m{:s}a{:s}c{:s}n{:s}v{:s}').format(int(teff), atmos.cval(logg), 
                       atmos.cval(mh), atmos.cval(am), atmos.cval(cm), atmos.cval(nm),atmos.cval(vmicro))
@@ -231,7 +235,7 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,
             raise Exception('Turbospectrum failed')
         else:
             ret = res.stdout
-            if type(ret)==byes:
+            if type(ret)==bytes:
                 ret = ret.decode()
         
         # Save the log file            
@@ -288,10 +292,18 @@ def do_turbospec(root,atmod,linelists,mh,am,abundances,wrange,dw,save=False,
     # Run bsyn
     os.chmod(root+'_bsyn.csh', 0o777)
     import pdb; pdb.set_trace()
-    ret = subprocess.check_output(['./'+os.path.basename(root)+'_bsyn.csh'],stderr=subprocess.STDOUT)
+    #ret = subprocess.check_output(['./'+os.path.basename(root)+'_bsyn.csh'],stderr=subprocess.STDOUT)
+    res = subprocess.run(['./'+os.path.basename(root)+'_bsyn.csh'],capture_output=True)
+    if res.returncode!=0:
+        print(res.stdout.decode())
+        print(res.stderr.decode())
+        raise Exception('Turbospectrum failed')
+    else:
+        ret = res.stdout
+        if type(ret)==bytes:
+            ret = ret.decode()
+    
     # Save the log file
-    if type(ret) is bytes:
-        ret = ret.decode()
     with open(root+'_bsyn.log','w') as f:
         f.write(ret)
     try:
